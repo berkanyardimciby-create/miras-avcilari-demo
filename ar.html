@@ -30,6 +30,7 @@
       display: inline-block; background: #b5651d; color: #fff; padding: 8px 14px;
       border-radius: 999px; text-decoration: none; font-weight: 700;
     }
+    #error-popup { display: none !important; }
     .uyari {
       position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center;
       background: #f6efe3; color: #2b2118; padding: 24px; text-align: center;
@@ -52,15 +53,34 @@
   <div class="uyari" id="uyari">
     <div>
       <h2>Kamera açılamadı</h2>
-      <p>Bu sayfa yalnızca <b>https://</b> ile başlayan bir adreste ve kamera izni verildiğinde çalışır.
-        Sayfayı yayımlanmış adresten açın ve tarayıcı sorduğunda "İzin ver"e dokunun.</p>
+      <div id="https-uyari" hidden>
+        <p>Bu sayfa yalnızca <b>https://</b> ile başlayan bir adreste çalışır.
+          Sayfayı yayımlanmış adresten açın.</p>
+      </div>
+      <div id="izin-uyari" hidden style="text-align:left; max-width:420px">
+        <p>Tarayıcının kamerayı kullanmasına izin verilmemiş. Sırayla deneyin:</p>
+        <ol>
+          <li>Adres çubuğunun solundaki <b>kilit simgesine</b> dokunun; <b>Kamera</b> iznini açın
+            (Chrome: İzinler → Kamera → İzin ver · Firefox: Kamera "Engellendi" ise dokunup kaldırın). Sonra sayfayı yenileyin.</li>
+          <li>Olmazsa tarayıcının kendi izni kapalıdır: <b>Ayarlar → Uygulamalar → Chrome/Firefox → İzinler → Kamera → İzin ver</b>.</li>
+          <li>Sayfa QR okuyucu ya da WhatsApp içinde açıldıysa menüden <b>"Tarayıcıda aç"</b>ı seçin.</li>
+        </ol>
+        <p style="text-align:center"><button type="button" onclick="location.reload()"
+          style="padding:10px 18px; border-radius:999px; border:none; background:#b5651d; color:#fff; font-weight:700; font-size:1rem">Tekrar dene</button></p>
+      </div>
       <p><a href="index.html">Alanlar listesine dön</a></p>
     </div>
   </div>
 
 <script>
 // Sahne, alanlar.js'teki her işaretçi için bir <a-marker> içerecek şekilde kurulur.
-if (!window.isSecureContext) document.getElementById("uyari").style.display = "flex";
+function uyariGoster(kutu) {
+  document.getElementById(kutu).hidden = false;
+  document.getElementById("uyari").style.display = "flex";
+}
+if (!window.isSecureContext) uyariGoster("https-uyari");
+// AR.js kamera açılamazsa bu olayı yayınlar; İngilizce hata yerine Türkçe yönerge gösterilir.
+window.addEventListener("camera-error", () => { if (window.isSecureContext) uyariGoster("izin-uyari"); });
 
 const isaretliler = ALANLAR.filter(a => a.isaretci);
 
