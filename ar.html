@@ -218,6 +218,26 @@ let onceki = performance.now();
   requestAnimationFrame(dongu);
 })(onceki);
 
+// Birden çok işaretçi görünürken dokunulan noktaya ekranda en yakın olanı seç
+const isaretciler = [...document.querySelectorAll("a-marker")];
+const dunyaNoktasi = new THREE.Vector3();
+function sec(x, y) {
+  const kamera = document.querySelector("a-scene").camera;
+  if (!kamera) return;
+  let enYakin = null, enKisa = Infinity;
+  for (const m of isaretciler) {
+    if (!m.object3D.visible) continue;
+    m.object3D.getWorldPosition(dunyaNoktasi).project(kamera);
+    const d = Math.hypot((dunyaNoktasi.x + 1) / 2 * innerWidth - x, (1 - dunyaNoktasi.y) / 2 * innerHeight - y);
+    if (d < enKisa) { enKisa = d; enYakin = m; }
+  }
+  if (enYakin && enYakin !== aktifIsaretci) {
+    aktifIsaretci = enYakin;
+    aktifAlan = ALANLAR.find(a => a.id === enYakin.dataset.alan);
+    noktaGoster(aktifAlan, enYakin, noktaSira[aktifAlan.id]);
+  }
+}
+
 // Parmakla çevirme ve iki parmakla büyütme (bilgisayarda fareyle sürükleme)
 let sonX = null, sonY = null, ilkMesafe = null, ilkCarpan = 1, carpan = 1;
 const arayuzde = e => e.target.closest && e.target.closest(".panel, .dugmeler, .gezgin, .ust, .uyari");
@@ -235,8 +255,12 @@ function cevir(x, y) {
 }
 document.addEventListener("touchstart", e => {
   if (arayuzde(e)) return;
-  if (e.touches.length === 1) { sonX = e.touches[0].clientX; sonY = e.touches[0].clientY; }
-  if (e.touches.length === 2) { ilkMesafe = mesafe(e.touches); ilkCarpan = carpan; sonX = null; }
+  const t = e.touches;
+  if (t.length === 1) { sec(t[0].clientX, t[0].clientY); sonX = t[0].clientX; sonY = t[0].clientY; }
+  if (t.length === 2) {
+    sec((t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2);
+    ilkMesafe = mesafe(t); ilkCarpan = carpan; sonX = null;
+  }
 }, { passive: true });
 document.addEventListener("touchmove", e => {
   if (arayuzde(e) || !aktifModel) return;
@@ -249,7 +273,9 @@ document.addEventListener("touchmove", e => {
 document.addEventListener("touchend", e => {
   if (e.touches.length === 0) { sonX = null; ilkMesafe = null; }
 });
-document.addEventListener("mousedown", e => { if (!arayuzde(e)) { sonX = e.clientX; sonY = e.clientY; } });
+document.addEventListener("mousedown", e => {
+  if (!arayuzde(e)) { sec(e.clientX, e.clientY); sonX = e.clientX; sonY = e.clientY; }
+});
 document.addEventListener("mousemove", e => { if (sonX !== null) cevir(e.clientX, e.clientY); });
 document.addEventListener("mouseup", () => { sonX = null; });
 </script>
