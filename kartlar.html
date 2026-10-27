@@ -36,14 +36,19 @@
     <h1>QR Kartları</h1>
     <p>Her kartın QR kodu, telefon kamerasıyla okutulunca o alanın 3D modelini açar.
       Kodlar şu adrese göre üretildi: <code id="adres"></code></p>
-    <p>⚠️ Bu sayfayı <b>yayımlanmış (https) adresten</b> açıp yazdırın; bilgisayardaki dosyadan
-      açarsanız QR kodlar telefonda çalışmaz.</p>
+    <p>Sayfa bilgisayardaki kopyadan açılsa bile QR kodlar yayındaki adresi gösterir.
+      Site başka bir adrese taşınırsa sayfanın kodundaki <code>YAYIN_ADRESI</code> satırını değiştirin.</p>
     <p>Yazdırma: Ctrl+P → Kenar boşlukları "Yok/Minimum", "Arka plan grafikleri" açık.</p>
   </div>
   <div class="sayfa" id="sayfa"></div>
 
 <script>
-const temel = new URL("index.html", location.href).href;
+// QR kodlar telefonda açılacağı için her zaman yayındaki (https) adresi göstermeli.
+// Sayfa https ile açıldıysa o adres, bilgisayardaki kopyadan açıldıysa yayın adresi kullanılır.
+const YAYIN_ADRESI = "https://berkanyardimciby-create.github.io/miras-avcilari-demo/";
+const temel = location.protocol === "https:"
+  ? new URL("index.html", location.href).href
+  : YAYIN_ADRESI + "index.html";
 document.getElementById("adres").textContent = temel;
 const sayfa = document.getElementById("sayfa");
 
