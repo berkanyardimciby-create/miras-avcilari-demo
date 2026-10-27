@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Miras Avcıları</title>
   <!-- ?s=... sürüm numarası: alanlar.js veya stil.css değişince 1 artırın ki telefonlar eskisini kullanmasın -->
-  <link rel="stylesheet" href="stil.css?s=4">
+  <link rel="stylesheet" href="stil.css?s=5">
   <!-- Google model-viewer: 3D gösterim + telefonda "Odamda Gör" (AR) -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
-  <script src="alanlar.js?s=4"></script>
+  <script src="alanlar.js?s=5"></script>
 </head>
 <body>
   <header>
@@ -89,23 +89,37 @@ function ayrinti(a) {
   });
   mv.append(el("button", { slot: "ar-button", class: "ar-dugmesi" }, "📱 Odamda Gör"));
 
-  // Birden çok noktası olan alanlarda (ör. Efes) sekmelerle model ve bilgi değişir
+  // Birden çok noktası olan alanlarda (ör. Efes) sekmelerle ve modelin üstündeki
+  // ◀ ▶ çubuğuyla (AR sayfasındakiyle aynı) model ve bilgi değişir
   const noktaKutu = el("div", { class: "kutu" });
   if (a.noktalar) {
     const sekmeler = el("div", { class: "sekmeler" });
     const noktaBaslik = el("h3");
     const noktaBilgi = el("p", { style: "margin:0" });
+    const gezgin = el("div", { class: "mv-gezgin" });
+    const geri = el("button", { type: "button", "aria-label": "Önceki nokta" }, "◀");
+    const gezginAd = el("span");
+    const ileri = el("button", { type: "button", "aria-label": "Sonraki nokta" }, "▶");
+    gezgin.append(geri, gezginAd, ileri);
+    mv.append(gezgin);
+    let sira = 0;
+    const goster = i => {
+      sira = (i + a.noktalar.length) % a.noktalar.length;
+      const n = a.noktalar[sira];
+      sekmeler.querySelectorAll("button").forEach((x, j) => x.classList.toggle("secili", j === sira));
+      mv.src = n.model;
+      gezginAd.textContent = `${n.ad} (${sira + 1}/${a.noktalar.length})`;
+      noktaBaslik.textContent = `📍 ${n.ad}`;
+      noktaBilgi.textContent = n.bilgi;
+    };
     a.noktalar.forEach((n, i) => {
       const b = el("button", { type: "button" }, n.ad);
-      b.onclick = () => {
-        sekmeler.querySelectorAll("button").forEach(x => x.classList.toggle("secili", x === b));
-        mv.src = n.model;
-        noktaBaslik.textContent = `📍 ${n.ad}`;
-        noktaBilgi.textContent = n.bilgi;
-      };
+      b.onclick = () => goster(i);
       sekmeler.append(b);
-      if (i === 0) b.click();
     });
+    geri.onclick = () => goster(sira - 1);
+    ileri.onclick = () => goster(sira + 1);
+    goster(0);
     noktaKutu.append(noktaBaslik, noktaBilgi);
     icerik.append(sekmeler);
   }

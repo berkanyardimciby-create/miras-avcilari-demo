@@ -77,6 +77,17 @@ model-viewer {
   background: var(--vurgu); color: #fff; font-weight: 700; font-size: 1rem;
   box-shadow: 0 4px 12px rgba(0,0,0,.2);
 }
+.mv-gezgin {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; max-width: calc(100% - 20px);
+  background: rgba(255,250,242,.95); border-radius: 999px; padding: 4px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2); font-weight: 700; color: var(--yazi);
+}
+.mv-gezgin span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .95rem; }
+.mv-gezgin button {
+  flex: none; width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: var(--vurgu); color: #fff; font-size: 1rem; cursor: pointer;
+}
 .sekmeler { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 2px; }
 .sekmeler button {
   flex: none; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--vurgu);
