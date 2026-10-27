@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Kartları · Miras Avcıları</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="alanlar.js"></script>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f6efe3; color: #2b2118; }
+    .bilgi { max-width: 760px; margin: 0 auto; padding: 16px; }
+    .bilgi code { background: #fff; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+    .sayfa { display: grid; grid-template-columns: repeat(auto-fill, 63mm); gap: 6mm; justify-content: center; padding: 8mm; }
+    /* 63 x 88 mm: standart oyun kartı boyu */
+    .kart {
+      width: 63mm; height: 88mm; background: #fffaf2; border: 1px dashed #b9a88f; border-radius: 3mm;
+      border-top: 4mm solid var(--renk); padding: 4mm; display: flex; flex-direction: column; align-items: center;
+      text-align: center; break-inside: avoid;
+    }
+    .kart h2 { font-size: 13pt; margin: 1mm 0; line-height: 1.15; }
+    .kart .alt { font-size: 8.5pt; color: #6f6253; }
+    .kart .qr { margin: auto 0 2mm; }
+    .kart .qr img, .kart .qr canvas { width: 34mm !important; height: 34mm !important; }
+    .kart small { font-size: 7pt; color: #6f6253; }
+    .isaretci { justify-content: space-between; }
+    .isaretci img { width: 50mm; height: 50mm; }
+    @media print {
+      body { background: #fff; }
+      .bilgi { display: none; }
+      .sayfa { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bilgi">
+    <h1>QR Kartları</h1>
+    <p>Her kartın QR kodu, telefon kamerasıyla okutulunca o alanın 3D modelini açar.
+      Kodlar şu adrese göre üretildi: <code id="adres"></code></p>
+    <p>⚠️ Bu sayfayı <b>yayımlanmış (https) adresten</b> açıp yazdırın; bilgisayardaki dosyadan
+      açarsanız QR kodlar telefonda çalışmaz.</p>
+    <p>Yazdırma: Ctrl+P → Kenar boşlukları "Yok/Minimum", "Arka plan grafikleri" açık.</p>
+  </div>
+  <div class="sayfa" id="sayfa"></div>
+
+<script>
+const temel = new URL("index.html", location.href).href;
+document.getElementById("adres").textContent = temel;
+const sayfa = document.getElementById("sayfa");
+
+for (const a of ALANLAR) {
+  const kart = document.createElement("div");
+  kart.className = "kart";
+  kart.style.setProperty("--renk", a.renk);
+  const baslik = document.createElement("h2");
+  baslik.textContent = a.ad;
+  const alt = document.createElement("div");
+  alt.className = "alt";
+  alt.textContent = `${a.il} · UNESCO ${a.unescoYili}`;
+  const qr = document.createElement("div");
+  qr.className = "qr";
+  const not = document.createElement("small");
+  not.textContent = "Okut, 3D modeli gör, soruyu cevapla!";
+  kart.append(baslik, alt, qr, not);
+  sayfa.append(kart);
+  new QRCode(qr, { text: `${temel}?alan=${a.id}`, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M });
+}
+
+// AR.js işaretçili alanlar: işaretçi kartı (kutuya ya da oyun tahtasına yapıştırılır)
+for (const a of ALANLAR.filter(x => x.isaretci === "hiro" || x.isaretci === "kanji")) {
+  const kart = document.createElement("div");
+  kart.className = "kart isaretci";
+  kart.style.setProperty("--renk", a.renk);
+  const baslik = document.createElement("h2");
+  baslik.textContent = a.ad;
+  const img = document.createElement("img");
+  img.src = `isaretciler/${a.isaretci}.png`;
+  img.alt = `${a.isaretci} işaretçisi`;
+  const not = document.createElement("small");
+  not.textContent = "AR modu: 'Kartı Tara' sayfasında kameraya gösterin";
+  kart.append(baslik, img, not);
+  sayfa.append(kart);
+}
+</script>
+</body>
+</html>

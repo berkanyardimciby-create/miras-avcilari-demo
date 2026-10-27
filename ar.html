@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kartı Tara · Miras Avcıları</title>
+  <!-- A-Frame + AR.js (işaretçi tabanlı AR, uygulama indirmeden tarayıcıda) -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <script src="alanlar.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .ust {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 10px 16px; background: rgba(43,33,24,.75); color: #fff; font-size: .9rem;
+    }
+    .ust a { color: #ffd59e; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .panel {
+      position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 10;
+      background: #fffaf2; color: #2b2118; border-radius: 14px; padding: 14px 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.3); border-top: 6px solid #b5651d;
+      transform: translateY(140%); transition: transform .3s;
+    }
+    .panel.acik { transform: none; }
+    .panel h2 { margin: 0 0 2px; font-size: 1.2rem; }
+    .panel .alt { color: #6f6253; font-size: .85rem; margin-bottom: 6px; }
+    .panel p { margin: 0 0 10px; font-size: .95rem; line-height: 1.4; }
+    .panel a {
+      display: inline-block; background: #b5651d; color: #fff; padding: 8px 14px;
+      border-radius: 999px; text-decoration: none; font-weight: 700;
+    }
+    .uyari {
+      position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center;
+      background: #f6efe3; color: #2b2118; padding: 24px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="ust">
+    <span id="ipucu">Kartın üzerindeki işaretçiyi kameraya gösterin</span>
+    <a href="index.html">← Alanlar</a>
+  </div>
+
+  <div class="panel" id="panel">
+    <h2 id="p-ad"></h2>
+    <div class="alt" id="p-alt"></div>
+    <p id="p-ozet"></p>
+    <a id="p-link" href="#">Ayrıntı ve soru →</a>
+  </div>
+
+  <div class="uyari" id="uyari">
+    <div>
+      <h2>Kamera açılamadı</h2>
+      <p>Bu sayfa yalnızca <b>https://</b> ile başlayan bir adreste ve kamera izni verildiğinde çalışır.
+        Sayfayı yayımlanmış adresten açın ve tarayıcı sorduğunda "İzin ver"e dokunun.</p>
+      <p><a href="index.html">Alanlar listesine dön</a></p>
+    </div>
+  </div>
+
+<script>
+// Sahne, alanlar.js'teki her işaretçi için bir <a-marker> içerecek şekilde kurulur.
+if (!window.isSecureContext) document.getElementById("uyari").style.display = "flex";
+
+const isaretliler = ALANLAR.filter(a => a.isaretci);
+
+function isaretciEtiketi(a) {
+  const ozellik = (a.isaretci === "hiro" || a.isaretci === "kanji")
+    ? `preset="${a.isaretci}"`
+    : `type="pattern" url="${a.isaretci}"`;
+  const s = a.olcek;
+  return `
+    <a-marker ${ozellik} data-alan="${a.id}" smooth="true" smoothCount="5">
+      <a-entity gltf-model="url(${a.model})" scale="${s} ${s} ${s}"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear"></a-entity>
+    </a-marker>`;
+}
+
+document.body.insertAdjacentHTML("afterbegin", `
+  <a-scene embedded vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true"
+    arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+    ${isaretliler.map(isaretciEtiketi).join("")}
+    <a-entity camera></a-entity>
+  </a-scene>`);
+
+const panel = document.getElementById("panel");
+let kapatmaZamanlayici = null;
+
+document.querySelectorAll("a-marker").forEach(m => {
+  const a = ALANLAR.find(x => x.id === m.dataset.alan);
+  m.addEventListener("markerFound", () => {
+    clearTimeout(kapatmaZamanlayici);
+    document.getElementById("p-ad").textContent = a.ad;
+    document.getElementById("p-alt").textContent = `${a.il} · UNESCO ${a.unescoYili}`;
+    document.getElementById("p-ozet").textContent = a.ozet;
+    document.getElementById("p-link").href = `index.html?alan=${a.id}`;
+    panel.style.borderTopColor = a.renk;
+    panel.classList.add("acik");
+  });
+  // Panel, işaretçi kaybolunca hemen kapanmaz; okumaya zaman kalsın.
+  m.addEventListener("markerLost", () => {
+    clearTimeout(kapatmaZamanlayici);
+    kapatmaZamanlayici = setTimeout(() => panel.classList.remove("acik"), 4000);
+  });
+});
+</script>
+</body>
+</html>

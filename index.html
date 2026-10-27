@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Miras Avcıları</title>
+  <link rel="stylesheet" href="stil.css">
+  <!-- Google model-viewer: 3D gösterim + telefonda "Odamda Gör" (AR) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <script src="alanlar.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🏛️ Miras Avcıları</h1>
+    <p>Türkiye'nin UNESCO Dünya Mirası alanları</p>
+  </header>
+  <main id="icerik"></main>
+
+<script>
+// Kartın QR kodu bu sayfayı ?alan=efes gibi bir adresle açar.
+const params = new URLSearchParams(location.search);
+const secili = ALANLAR.find(a => a.id === params.get("alan"));
+const icerik = document.getElementById("icerik");
+
+function el(etiket, ozellik = {}, yazi) {
+  const e = document.createElement(etiket);
+  for (const [k, v] of Object.entries(ozellik)) e.setAttribute(k, v);
+  if (yazi !== undefined) e.textContent = yazi;
+  return e;
+}
+
+// "Avlanan" alanlar bu telefonda saklanır (gizli sekmede saklanmayabilir, sorun değil).
+function avlananlar() {
+  try { return JSON.parse(localStorage.getItem("mirasAvcilari.avlanan") || "[]"); }
+  catch { return []; }
+}
+function avla(id) {
+  try {
+    const liste = new Set(avlananlar());
+    liste.add(id);
+    localStorage.setItem("mirasAvcilari.avlanan", JSON.stringify([...liste]));
+  } catch {}
+}
+
+function galeri() {
+  const av = avlananlar();
+  const ust = el("div", { class: "ust-dugmeler" });
+  ust.append(el("a", { class: "dugme dolu", href: "ar.html" }, "📷 Kartı Tara (AR)"));
+  icerik.append(ust);
+  icerik.append(el("p", { class: "ilerleme" },
+    `Avladığın alan: ${av.length} / ${ALANLAR.length}`));
+
+  const izgara = el("div", { class: "izgara" });
+  for (const a of ALANLAR) {
+    const kart = el("a", { class: "alan-karti", href: `?alan=${a.id}`, style: `--renk:${a.renk}` });
+    kart.append(el("strong", {}, a.ad), el("span", {}, `${a.il} · ${a.unescoYili}`));
+    if (av.includes(a.id)) kart.append(el("span", { class: "rozet" }, "✓ Avlandı"));
+    izgara.append(kart);
+  }
+  icerik.append(izgara);
+}
+
+function ayrinti(a) {
+  document.title = `${a.ad} · Miras Avcıları`;
+  icerik.append(el("a", { class: "geri", href: "index.html" }, "← Tüm alanlar"));
+  icerik.append(el("h2", { style: "margin:4px 0 10px" }, a.ad));
+
+  const mv = el("model-viewer", {
+    src: a.model,
+    alt: `${a.ad} 3D modeli`,
+    ar: "",
+    "ar-modes": "webxr scene-viewer quick-look",
+    "ar-scale": "auto",
+    "camera-controls": "",
+    "auto-rotate": "",
+    "touch-action": "pan-y",
+    "shadow-intensity": "1",
+    exposure: "1.1"
+  });
+  mv.append(el("button", { slot: "ar-button", class: "ar-dugmesi" }, "📱 Odamda Gör"));
+  icerik.append(mv);
+
+  const etiketler = el("div", { class: "etiketler" });
+  etiketler.append(
+    el("span", { class: "etiket" }, `📍 ${a.il}`),
+    el("span", { class: "etiket" }, `🗓️ ${a.donem}`),
+    el("span", { class: "etiket" }, `🌍 UNESCO: ${a.unescoYili}`)
+  );
+  icerik.append(etiketler);
+
+  const ozet = el("div", { class: "kutu" });
+  ozet.append(el("h3", {}, "Kısaca"), el("p", { style: "margin:0" }, a.ozet));
+  const bmy = el("div", { class: "kutu" });
+  bmy.append(el("h3", {}, "💡 Biliyor muydun?"), el("p", { style: "margin:0" }, a.biliyorMuydun));
+  icerik.append(ozet, bmy);
+
+  // Soru: doğru cevap alanı "avlar" (oyundaki puanla eşleştirilebilir)
+  const soru = el("div", { class: "kutu" });
+  soru.append(el("h3", {}, "🎯 Avla: " + a.soru.metin));
+  const secenekler = el("div", { class: "secenekler" });
+  const sonuc = el("div", { class: "sonuc" });
+  a.soru.secenekler.forEach((s, i) => {
+    const b = el("button", { type: "button" }, s);
+    b.onclick = () => {
+      if (i === a.soru.dogru) {
+        b.classList.add("dogru");
+        sonuc.textContent = "Tebrikler! Bu alanı avladın. 🏆";
+        sonuc.style.color = "var(--dogru)";
+        secenekler.querySelectorAll("button").forEach(x => x.disabled = true);
+        avla(a.id);
+      } else {
+        b.classList.add("yanlis");
+        b.disabled = true;
+        sonuc.textContent = "Olmadı, bir daha dene!";
+        sonuc.style.color = "var(--yanlis)";
+      }
+    };
+    secenekler.append(b);
+  });
+  soru.append(secenekler, sonuc);
+  icerik.append(soru);
+}
+
+if (secili) ayrinti(secili); else galeri();
+</script>
+</body>
+</html>
