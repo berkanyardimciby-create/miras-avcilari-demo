@@ -13,6 +13,7 @@
     .sayfa { display: grid; grid-template-columns: repeat(auto-fill, 63mm); gap: 6mm; justify-content: center; padding: 8mm; }
     /* 63 x 88 mm: standart oyun kartı boyu */
     .kart {
+      box-sizing: border-box;  /* kenar ve boşluk dahil tam 63 x 88 mm */
       width: 63mm; height: 88mm; background: #fffaf2; border: 1px dashed #b9a88f; border-radius: 3mm;
       border-top: 4mm solid var(--renk); padding: 4mm; display: flex; flex-direction: column; align-items: center;
       text-align: center; break-inside: avoid;
@@ -24,10 +25,13 @@
     .kart small { font-size: 7pt; color: #6f6253; }
     .isaretci { justify-content: space-between; }
     .isaretci img { width: 52mm; height: auto; margin-top: 4mm; }
+    /* A4'e 3 x 3 = 9 kart sığsın: dar kenar boşluğu ve aralık */
+    @page { size: A4; margin: 5mm; }
     @media print {
-      body { background: #fff; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; margin: 0; }
       .bilgi { display: none; }
-      .sayfa { padding: 0; }
+      .sayfa { padding: 0; gap: 2mm; }
     }
   </style>
 </head>
