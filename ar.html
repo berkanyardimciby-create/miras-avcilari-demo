@@ -153,7 +153,7 @@ document.querySelectorAll("a-marker").forEach(m => {
     document.getElementById("p-link").href = `index.html?alan=${a.id}`;
     panel.style.borderTopColor = a.renk;
     dugmeler.classList.remove("gizli");
-    document.getElementById("ipucu").textContent = "Tek parmakla çevirin, iki parmakla büyütün";
+    document.getElementById("ipucu").textContent = "Parmakla sağa-sola çevirin, yukarı-aşağı yatırın, iki parmakla büyütün";
   });
 });
 
@@ -166,22 +166,28 @@ let onceki = performance.now();
 })(onceki);
 
 // Parmakla çevirme ve iki parmakla büyütme (bilgisayarda fareyle sürükleme)
-let sonX = null, ilkMesafe = null, ilkCarpan = 1, carpan = 1;
+let sonX = null, sonY = null, ilkMesafe = null, ilkCarpan = 1, carpan = 1;
 const arayuzde = e => e.target.closest && e.target.closest(".panel, .dugmeler, .ust, .uyari");
 const mesafe = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
 
-function cevir(x) {
-  if (aktifModel && sonX !== null) aktifModel.object3D.rotation.y += (x - sonX) * 0.01;
+// Yatay kaydırma: kendi ekseninde döner. Dikey kaydırma: öne/arkaya yatar (±90° ile sınırlı).
+function cevir(x, y) {
+  if (aktifModel && sonX !== null) {
+    const r = aktifModel.object3D.rotation;
+    r.y += (x - sonX) * 0.01;
+    r.x = Math.min(Math.PI / 2, Math.max(-Math.PI / 2, r.x + (y - sonY) * 0.01));
+  }
   sonX = x;
+  sonY = y;
 }
 document.addEventListener("touchstart", e => {
   if (arayuzde(e)) return;
-  if (e.touches.length === 1) sonX = e.touches[0].clientX;
+  if (e.touches.length === 1) { sonX = e.touches[0].clientX; sonY = e.touches[0].clientY; }
   if (e.touches.length === 2) { ilkMesafe = mesafe(e.touches); ilkCarpan = carpan; sonX = null; }
 }, { passive: true });
 document.addEventListener("touchmove", e => {
   if (arayuzde(e) || !aktifModel) return;
-  if (e.touches.length === 1) cevir(e.touches[0].clientX);
+  if (e.touches.length === 1) cevir(e.touches[0].clientX, e.touches[0].clientY);
   if (e.touches.length === 2 && ilkMesafe) {
     carpan = Math.min(3, Math.max(0.3, ilkCarpan * mesafe(e.touches) / ilkMesafe));
     aktifModel.object3D.scale.setScalar(aktifOlcek * carpan);
@@ -190,8 +196,8 @@ document.addEventListener("touchmove", e => {
 document.addEventListener("touchend", e => {
   if (e.touches.length === 0) { sonX = null; ilkMesafe = null; }
 });
-document.addEventListener("mousedown", e => { if (!arayuzde(e)) sonX = e.clientX; });
-document.addEventListener("mousemove", e => { if (sonX !== null) cevir(e.clientX); });
+document.addEventListener("mousedown", e => { if (!arayuzde(e)) { sonX = e.clientX; sonY = e.clientY; } });
+document.addEventListener("mousemove", e => { if (sonX !== null) cevir(e.clientX, e.clientY); });
 document.addEventListener("mouseup", () => { sonX = null; });
 </script>
 </body>
