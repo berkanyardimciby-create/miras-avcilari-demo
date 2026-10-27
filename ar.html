@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kartı Tara · Miras Avcıları</title>
   <!-- A-Frame + AR.js (işaretçi tabanlı AR, uygulama indirmeden tarayıcıda) -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.8/aframe/build/aframe-ar.js"></script>
   <script src="alanlar.js"></script>
   <style>
     body { margin: 0; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -38,7 +38,7 @@
 </head>
 <body>
   <div class="ust">
-    <span id="ipucu">Kartın üzerindeki işaretçiyi kameraya gösterin</span>
+    <span id="ipucu">İşaretçiyi masaya koyun, telefonu 20-40 cm yukarıdan tutun</span>
     <a href="index.html">← Alanlar</a>
   </div>
 
@@ -70,7 +70,7 @@ function isaretciEtiketi(a) {
     : `type="pattern" url="${a.isaretci}"`;
   const s = a.olcek;
   return `
-    <a-marker ${ozellik} data-alan="${a.id}" smooth="true" smoothCount="5">
+    <a-marker ${ozellik} data-alan="${a.id}" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <a-entity gltf-model="url(${a.model})" scale="${s} ${s} ${s}"
         animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear"></a-entity>
     </a-marker>`;
@@ -79,7 +79,7 @@ function isaretciEtiketi(a) {
 document.body.insertAdjacentHTML("afterbegin", `
   <a-scene embedded vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; colorManagement: true"
-    arjs="sourceType: webcam; debugUIEnabled: false;">
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
     <a-entity light="type: ambient; intensity: 0.7"></a-entity>
     <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
     ${isaretliler.map(isaretciEtiketi).join("")}
