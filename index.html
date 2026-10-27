@@ -94,31 +94,49 @@ function ayrinti(a) {
   bmy.append(el("h3", {}, "💡 Biliyor muydun?"), el("p", { style: "margin:0" }, a.biliyorMuydun));
   icerik.append(ozet, bmy);
 
-  // Soru: doğru cevap alanı "avlar" (oyundaki puanla eşleştirilebilir)
-  const soru = el("div", { class: "kutu" });
-  soru.append(el("h3", {}, "🎯 Avla: " + a.soru.metin));
-  const secenekler = el("div", { class: "secenekler" });
-  const sonuc = el("div", { class: "sonuc" });
-  a.soru.secenekler.forEach((s, i) => {
-    const b = el("button", { type: "button" }, s);
-    b.onclick = () => {
-      if (i === a.soru.dogru) {
-        b.classList.add("dogru");
-        sonuc.textContent = "Tebrikler! Bu alanı avladın. 🏆";
-        sonuc.style.color = "var(--dogru)";
-        secenekler.querySelectorAll("button").forEach(x => x.disabled = true);
-        avla(a.id);
-      } else {
-        b.classList.add("yanlis");
-        b.disabled = true;
-        sonuc.textContent = "Olmadı, bir daha dene!";
-        sonuc.style.color = "var(--yanlis)";
-      }
-    };
-    secenekler.append(b);
+  // Sorular: hepsi doğru cevaplanınca alan "avlanır" (oyundaki puanla eşleştirilebilir)
+  const toplam = a.sorular.length;
+  let bilinen = 0;
+  const durum = el("div", { class: "kutu" });
+  const durumYazi = el("div", { class: "sonuc", style: "margin:0" }, `🎯 Avlamak için ${toplam} soruyu da doğru cevapla (0/${toplam})`);
+  durum.append(durumYazi);
+  icerik.append(durum);
+
+  a.sorular.forEach((q, n) => {
+    const kutu = el("div", { class: "kutu" });
+    kutu.append(el("h3", {}, `Soru ${n + 1}. ${q.metin}`));
+    const secenekler = el("div", { class: "secenekler" });
+    const sonuc = el("div", { class: "sonuc" });
+    // Seçenek sırası her açılışta karışır; doğru cevabın yeri ezberlenmesin
+    const sira = q.secenekler.map((_, i) => i).sort(() => Math.random() - 0.5);
+    for (const i of sira) {
+      const b = el("button", { type: "button" }, q.secenekler[i]);
+      b.onclick = () => {
+        if (i === q.dogru) {
+          b.classList.add("dogru");
+          sonuc.textContent = "Doğru!";
+          sonuc.style.color = "var(--dogru)";
+          secenekler.querySelectorAll("button").forEach(x => x.disabled = true);
+          bilinen++;
+          if (bilinen === toplam) {
+            durumYazi.textContent = "Tebrikler! Bu alanı avladın. 🏆";
+            durumYazi.style.color = "var(--dogru)";
+            avla(a.id);
+          } else {
+            durumYazi.textContent = `🎯 Avlamak için ${toplam} soruyu da doğru cevapla (${bilinen}/${toplam})`;
+          }
+        } else {
+          b.classList.add("yanlis");
+          b.disabled = true;
+          sonuc.textContent = "Olmadı, bir daha dene!";
+          sonuc.style.color = "var(--yanlis)";
+        }
+      };
+      secenekler.append(b);
+    }
+    kutu.append(secenekler, sonuc);
+    icerik.append(kutu);
   });
-  soru.append(secenekler, sonuc);
-  icerik.append(soru);
 }
 
 if (secili) ayrinti(secili); else galeri();

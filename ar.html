@@ -9,21 +9,35 @@
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.8/aframe/build/aframe-ar.js"></script>
   <script src="alanlar.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; touch-action: none; }
     .ust {
       position: fixed; top: 0; left: 0; right: 0; z-index: 10;
       display: flex; justify-content: space-between; align-items: center; gap: 8px;
       padding: 10px 16px; background: rgba(43,33,24,.75); color: #fff; font-size: .9rem;
     }
     .ust a { color: #ffd59e; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .dugmeler {
+      position: fixed; right: 12px; bottom: 12px; z-index: 11;
+      display: flex; gap: 8px; transition: opacity .3s;
+    }
+    .dugmeler.gizli { opacity: 0; pointer-events: none; }
+    .dugmeler button {
+      padding: 12px 16px; border-radius: 999px; border: none; font-size: 1rem; font-weight: 700;
+      background: #fffaf2; color: #2b2118; box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+    .dugmeler button.etkin { background: #b5651d; color: #fff; }
     .panel {
-      position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 10;
+      position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 12; max-width: 520px;
       background: #fffaf2; color: #2b2118; border-radius: 14px; padding: 14px 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,.3); border-top: 6px solid #b5651d;
       transform: translateY(140%); transition: transform .3s;
     }
     .panel.acik { transform: none; }
-    .panel h2 { margin: 0 0 2px; font-size: 1.2rem; }
+    .panel h2 { margin: 0 0 2px; font-size: 1.2rem; padding-right: 36px; }
+    .panel .kapat {
+      position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%;
+      border: none; background: #eadcc4; color: #2b2118; font-size: 1.1rem; font-weight: 700;
+    }
     .panel .alt { color: #6f6253; font-size: .85rem; margin-bottom: 6px; }
     .panel p { margin: 0 0 10px; font-size: .95rem; line-height: 1.4; }
     .panel a {
@@ -43,7 +57,13 @@
     <a href="index.html">← Alanlar</a>
   </div>
 
+  <div class="dugmeler gizli" id="dugmeler">
+    <button type="button" id="dondur-dugme">⟳ Döndür</button>
+    <button type="button" id="bilgi-dugme" class="etkin">ℹ️ Bilgi</button>
+  </div>
+
   <div class="panel" id="panel">
+    <button type="button" class="kapat" id="kapat" aria-label="Kapat">✕</button>
     <h2 id="p-ad"></h2>
     <div class="alt" id="p-alt"></div>
     <p id="p-ozet"></p>
@@ -91,8 +111,7 @@ function isaretciEtiketi(a) {
   const s = a.olcek;
   return `
     <a-marker ${ozellik} data-alan="${a.id}" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
-      <a-entity gltf-model="url(${a.model})" scale="${s} ${s} ${s}"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear"></a-entity>
+      <a-entity class="model" gltf-model="url(${a.model})" scale="${s} ${s} ${s}"></a-entity>
     </a-marker>`;
 }
 
@@ -107,25 +126,73 @@ document.body.insertAdjacentHTML("afterbegin", `
   </a-scene>`);
 
 const panel = document.getElementById("panel");
-let kapatmaZamanlayici = null;
+const dugmeler = document.getElementById("dugmeler");
+const dondurDugme = document.getElementById("dondur-dugme");
+let aktifModel = null;   // son görülen işaretçinin modeli; hareketler buna uygulanır
+let aktifOlcek = 1;
+let otomatikDon = false;
+
+// Bilgi paneli kendiliğinden açılmaz; "Bilgi" düğmesiyle açılır, ✕ ile kapanır.
+document.getElementById("bilgi-dugme").onclick = () => panel.classList.add("acik");
+document.getElementById("kapat").onclick = () => panel.classList.remove("acik");
+dondurDugme.onclick = () => {
+  otomatikDon = !otomatikDon;
+  dondurDugme.classList.toggle("etkin", otomatikDon);
+};
 
 document.querySelectorAll("a-marker").forEach(m => {
   const a = ALANLAR.find(x => x.id === m.dataset.alan);
+  const model = m.querySelector(".model");
   m.addEventListener("markerFound", () => {
-    clearTimeout(kapatmaZamanlayici);
+    aktifModel = model;
+    aktifOlcek = a.olcek;
+    carpan = model.object3D.scale.x / a.olcek;  // bu modelin önceki büyütmesi korunur
     document.getElementById("p-ad").textContent = a.ad;
     document.getElementById("p-alt").textContent = `${a.il} · UNESCO ${a.unescoYili}`;
     document.getElementById("p-ozet").textContent = a.ozet;
     document.getElementById("p-link").href = `index.html?alan=${a.id}`;
     panel.style.borderTopColor = a.renk;
-    panel.classList.add("acik");
-  });
-  // Panel, işaretçi kaybolunca hemen kapanmaz; okumaya zaman kalsın.
-  m.addEventListener("markerLost", () => {
-    clearTimeout(kapatmaZamanlayici);
-    kapatmaZamanlayici = setTimeout(() => panel.classList.remove("acik"), 4000);
+    dugmeler.classList.remove("gizli");
+    document.getElementById("ipucu").textContent = "Tek parmakla çevirin, iki parmakla büyütün";
   });
 });
+
+// Otomatik dönme (isteğe bağlı)
+let onceki = performance.now();
+(function dongu(simdi) {
+  if (otomatikDon && aktifModel) aktifModel.object3D.rotation.y += (simdi - onceki) * 0.0004;
+  onceki = simdi;
+  requestAnimationFrame(dongu);
+})(onceki);
+
+// Parmakla çevirme ve iki parmakla büyütme (bilgisayarda fareyle sürükleme)
+let sonX = null, ilkMesafe = null, ilkCarpan = 1, carpan = 1;
+const arayuzde = e => e.target.closest && e.target.closest(".panel, .dugmeler, .ust, .uyari");
+const mesafe = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
+function cevir(x) {
+  if (aktifModel && sonX !== null) aktifModel.object3D.rotation.y += (x - sonX) * 0.01;
+  sonX = x;
+}
+document.addEventListener("touchstart", e => {
+  if (arayuzde(e)) return;
+  if (e.touches.length === 1) sonX = e.touches[0].clientX;
+  if (e.touches.length === 2) { ilkMesafe = mesafe(e.touches); ilkCarpan = carpan; sonX = null; }
+}, { passive: true });
+document.addEventListener("touchmove", e => {
+  if (arayuzde(e) || !aktifModel) return;
+  if (e.touches.length === 1) cevir(e.touches[0].clientX);
+  if (e.touches.length === 2 && ilkMesafe) {
+    carpan = Math.min(3, Math.max(0.3, ilkCarpan * mesafe(e.touches) / ilkMesafe));
+    aktifModel.object3D.scale.setScalar(aktifOlcek * carpan);
+  }
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if (e.touches.length === 0) { sonX = null; ilkMesafe = null; }
+});
+document.addEventListener("mousedown", e => { if (!arayuzde(e)) sonX = e.clientX; });
+document.addEventListener("mousemove", e => { if (sonX !== null) cevir(e.clientX); });
+document.addEventListener("mouseup", () => { sonX = null; });
 </script>
 </body>
 </html>
