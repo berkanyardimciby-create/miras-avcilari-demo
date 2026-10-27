@@ -78,7 +78,8 @@ function ayrinti(a) {
     src: a.model,
     alt: `${a.ad} 3D modeli`,
     ar: "",
-    "ar-modes": "webxr scene-viewer quick-look",
+    // Önce Google Scene Viewer: Chrome içi WebXR bazı Android cihazlarda tarayıcıyı kapatıyor
+    "ar-modes": "scene-viewer quick-look webxr",
     "ar-scale": "auto",
     "camera-controls": "",
     "auto-rotate": "",
