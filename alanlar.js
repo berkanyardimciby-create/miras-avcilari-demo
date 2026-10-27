@@ -15,6 +15,8 @@
   - noktalar (isteğe bağlı): alanın birden çok önemli yeri varsa her biri { ad, model, bilgi }
            olarak yazılır; AR'da ◀ ▶ düğmeleriyle, ayrıntı sayfasında sekmelerle gezilir.
            Yoksa alanın tek "model"i gösterilir. Örnek: Efes.
+  - gecici: true → alan henüz Dünya Mirası değil, UNESCO Geçici Listesi'nde
+           (unescoYili = listeye girdiği yıl; sitede "Geçici Liste" olarak yazılır).
   - sorular: istediğiniz kadar soru eklenebilir. dogru = doğru seçeneğin sırası (0'dan başlar:
            ilk seçenek 0, ikinci 1, ...). Alan, tüm sorular doğru cevaplanınca "avlanır".
 */
@@ -353,6 +355,95 @@ window.ALANLAR = [
           "Yıldız haritasının"
         ],
         dogru: 1
+      }
+    ]
+  },
+
+  // ---- BÖLGEMİZ: UNESCO Geçici Listesi (gecici: true olanlar ayrı bölümde gösterilir) ----
+  {
+    id: "mamure",
+    ad: "Mamure Kalesi",
+    il: "Mersin (Anamur)",
+    unescoYili: 2012,
+    gecici: true,
+    donem: "Roma döneminden Osmanlı'ya",
+    model: "modeller/mamure.glb",
+    isaretci: "",
+    olcek: 1.2,
+    renk: "#5b7a8c",
+    ozet: "Anamur'da, deniz kıyısında yükselen Mamure, Türkiye'nin en iyi korunmuş ortaçağ kalelerinden biridir. Temelleri Roma dönemine uzanır; Selçuklular, Karamanoğulları ve Osmanlılar tarafından onarılıp kullanılmıştır. Surları, burçları ve avlularıyla bugün de büyük ölçüde ayaktadır.",
+    biliyorMuydun: "Kalenin avlusunda Karamanoğulları döneminden kalma küçük bir cami bulunur.",
+    sorular: [
+      {
+        metin: "Mamure Kalesi'nin Roma'dan Osmanlı'ya kadar farklı devletlerce onarılıp kullanılması en çok neyi gösterir?",
+        secenekler: [
+          "Kalenin Akdeniz kıyısında, deniz ve kara yollarını denetleyen stratejik bir konumda olduğunu",
+          "Kalenin yalnızca dinî amaçla kullanıldığını",
+          "Bölgede hiç savaş yaşanmadığını",
+          "Kalenin her dönemde yeniden sıfırdan yapıldığını"
+        ],
+        dogru: 0
+      },
+      {
+        metin: "13. yüzyılda Akdeniz kıyısındaki kaleleri ele geçirip onartan Anadolu Selçuklu sultanı kimdir?",
+        secenekler: ["Sultan Alparslan", "I. Alâeddin Keykubad", "II. Kılıç Arslan", "Osman Gazi"],
+        dogru: 1
+      },
+      {
+        metin: "Bir yerin UNESCO 'Geçici Listesi'nde olması ne anlama gelir?",
+        secenekler: [
+          "Dünya Mirası listesinden çıkarıldığı",
+          "Ülkenin, o yeri ileride Dünya Mirası olarak aday göstermeyi planladığı",
+          "Yalnızca geçici bir süre ziyarete açık olduğu",
+          "Tehlike altındaki miras ilan edildiği"
+        ],
+        dogru: 1
+      }
+    ]
+  },
+  {
+    id: "kizkalesi",
+    ad: "Kızkalesi ve Korykos Antik Kenti",
+    il: "Mersin (Erdemli)",
+    unescoYili: 2014,
+    gecici: true,
+    donem: "Antik çağ liman kenti + Orta Çağ kaleleri",
+    model: "modeller/kizkalesi.glb",
+    isaretci: "",
+    olcek: 1.2,
+    renk: "#2f8fb3",
+    ozet: "Kızkalesi, kıyıya yakın küçük bir adacığın üzerine yapılmış bir deniz kalesidir. Karşısındaki kıyıda Korykos kara kalesi ve antik Korykos kentinin kalıntıları bulunur. Orta Çağ'da Bizanslılar ve Kilikya Ermeni Krallığı tarafından kullanılan iki kale, birlikte limanı korurdu.",
+    biliyorMuydun: "Efsaneye göre bir kral, kızının yılan sokmasıyla öleceği kehanetini duyunca onu korumak için denizin ortasına bu kaleyi yaptırmıştır; ama yılan, kıza gönderilen bir üzüm sepetinin içinde kaleye ulaşır.",
+    sorular: [
+      {
+        metin: "Kızkalesi'nin bir adacık üzerine yapılmasının savunma açısından en önemli avantajı nedir?",
+        secenekler: [
+          "Çevresinin denizle çevrili olması nedeniyle karadan doğrudan saldırıya kapalı olması",
+          "Adada tarım yapılabilmesi",
+          "Adanın yanardağ kayalarından oluşması",
+          "Kalenin kıyıdan görünmemesi"
+        ],
+        dogru: 0
+      },
+      {
+        metin: "Kızkalesi ile karşı kıyıdaki Korykos kara kalesi birlikte hangi işi görürdü?",
+        secenekler: [
+          "Tahıl depolamak",
+          "Limanı ve deniz yolunu iki yönden korumak",
+          "Kervansaray olarak tüccarları ağırlamak",
+          "Gözlemevi olarak yıldızları izlemek"
+        ],
+        dogru: 1
+      },
+      {
+        metin: "Kızkalesi efsanesine göre kehanet nasıl gerçekleşir?",
+        secenekler: [
+          "Kale bir fırtınada yıkılır",
+          "Kız kaleden kaçar",
+          "Kaleye gönderilen üzüm sepetinden çıkan yılan kızı sokar",
+          "Kral kaleyi düşmana teslim eder"
+        ],
+        dogru: 2
       }
     ]
   }

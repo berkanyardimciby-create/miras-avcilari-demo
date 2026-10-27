@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Miras Avcıları</title>
   <!-- ?s=... sürüm numarası: alanlar.js veya stil.css değişince 1 artırın ki telefonlar eskisini kullanmasın -->
-  <link rel="stylesheet" href="stil.css?s=2">
+  <link rel="stylesheet" href="stil.css?s=3">
   <!-- Google model-viewer: 3D gösterim + telefonda "Odamda Gör" (AR) -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
-  <script src="alanlar.js?s=2"></script>
+  <script src="alanlar.js?s=3"></script>
 </head>
 <body>
   <header>
     <h1>🏛️ Miras Avcıları</h1>
-    <p>Türkiye'nin UNESCO Dünya Mirası alanları</p>
+    <p>Türkiye'nin UNESCO Dünya Mirası ve Geçici Liste alanları</p>
   </header>
   <main id="icerik"></main>
 
@@ -51,14 +51,22 @@ function galeri() {
   icerik.append(el("p", { class: "ilerleme" },
     `Avladığın alan: ${av.length} / ${ALANLAR.length}`));
 
-  const izgara = el("div", { class: "izgara" });
-  for (const a of ALANLAR) {
-    const kart = el("a", { class: "alan-karti", href: `?alan=${a.id}`, style: `--renk:${a.renk}` });
-    kart.append(el("strong", {}, a.ad), el("span", {}, `${a.il} · ${a.unescoYili}`));
-    if (av.includes(a.id)) kart.append(el("span", { class: "rozet" }, "✓ Avlandı"));
-    izgara.append(kart);
+  const gruplar = [
+    ["🌍 UNESCO Dünya Mirası", ALANLAR.filter(a => !a.gecici)],
+    ["🏰 Bölgemiz: UNESCO Geçici Listesi", ALANLAR.filter(a => a.gecici)],
+  ];
+  for (const [baslik, liste] of gruplar) {
+    if (!liste.length) continue;
+    icerik.append(el("h2", { class: "grup-baslik" }, baslik));
+    const izgara = el("div", { class: "izgara" });
+    for (const a of liste) {
+      const kart = el("a", { class: "alan-karti", href: `?alan=${a.id}`, style: `--renk:${a.renk}` });
+      kart.append(el("strong", {}, a.ad), el("span", {}, `${a.il} · ${a.unescoYili}`));
+      if (av.includes(a.id)) kart.append(el("span", { class: "rozet" }, "✓ Avlandı"));
+      izgara.append(kart);
+    }
+    icerik.append(izgara);
   }
-  icerik.append(izgara);
 }
 
 function ayrinti(a) {
@@ -107,7 +115,8 @@ function ayrinti(a) {
   etiketler.append(
     el("span", { class: "etiket" }, `📍 ${a.il}`),
     el("span", { class: "etiket" }, `🗓️ ${a.donem}`),
-    el("span", { class: "etiket" }, `🌍 UNESCO: ${a.unescoYili}`)
+    el("span", { class: "etiket" },
+      a.gecici ? `🏰 UNESCO Geçici Listesi: ${a.unescoYili}` : `🌍 UNESCO: ${a.unescoYili}`)
   );
   icerik.append(etiketler);
 

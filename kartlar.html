@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>QR Kartları · Miras Avcıları</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="alanlar.js?s=2"></script>
+  <script src="alanlar.js?s=3"></script>
   <style>
     body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f6efe3; color: #2b2118; }
     .bilgi { max-width: 760px; margin: 0 auto; padding: 16px; }
@@ -55,7 +55,7 @@ for (const a of ALANLAR) {
   baslik.textContent = a.ad;
   const alt = document.createElement("div");
   alt.className = "alt";
-  alt.textContent = `${a.il} · UNESCO ${a.unescoYili}`;
+  alt.textContent = `${a.il} · UNESCO ${a.gecici ? "Geçici Listesi " : ""}${a.unescoYili}`;
   const qr = document.createElement("div");
   qr.className = "qr";
   const not = document.createElement("small");

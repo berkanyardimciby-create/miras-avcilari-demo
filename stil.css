@@ -41,6 +41,7 @@ main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
 
 .ilerleme { text-align: center; color: var(--soluk); margin-bottom: 12px; }
 
+.grup-baslik { font-size: 1.1rem; margin: 20px 0 10px; }
 .izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .alan-karti {
   position: relative;
