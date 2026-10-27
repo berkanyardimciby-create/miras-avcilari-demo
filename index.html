@@ -78,7 +78,29 @@ function ayrinti(a) {
     exposure: "1.1"
   });
   mv.append(el("button", { slot: "ar-button", class: "ar-dugmesi" }, "📱 Odamda Gör"));
+
+  // Birden çok noktası olan alanlarda (ör. Efes) sekmelerle model ve bilgi değişir
+  const noktaKutu = el("div", { class: "kutu" });
+  if (a.noktalar) {
+    const sekmeler = el("div", { class: "sekmeler" });
+    const noktaBaslik = el("h3");
+    const noktaBilgi = el("p", { style: "margin:0" });
+    a.noktalar.forEach((n, i) => {
+      const b = el("button", { type: "button" }, n.ad);
+      b.onclick = () => {
+        sekmeler.querySelectorAll("button").forEach(x => x.classList.toggle("secili", x === b));
+        mv.src = n.model;
+        noktaBaslik.textContent = `📍 ${n.ad}`;
+        noktaBilgi.textContent = n.bilgi;
+      };
+      sekmeler.append(b);
+      if (i === 0) b.click();
+    });
+    noktaKutu.append(noktaBaslik, noktaBilgi);
+    icerik.append(sekmeler);
+  }
   icerik.append(mv);
+  if (a.noktalar) icerik.append(noktaKutu);
 
   const etiketler = el("div", { class: "etiketler" });
   etiketler.append(

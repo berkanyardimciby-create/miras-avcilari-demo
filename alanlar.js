@@ -12,6 +12,9 @@
       ""  → bu alanın AR.js işaretçisi yok (QR ile açılır)
   - olcek: AR.js modunda modelin işaretçi üstündeki büyüklüğü. 1.2 ≈ model işaretçiyi kaplar;
            model ekrandan taşıyorsa küçültün (ör. 0.8), çok küçükse büyütün.
+  - noktalar (isteğe bağlı): alanın birden çok önemli yeri varsa her biri { ad, model, bilgi }
+           olarak yazılır; AR'da ◀ ▶ düğmeleriyle, ayrıntı sayfasında sekmelerle gezilir.
+           Yoksa alanın tek "model"i gösterilir. Örnek: Efes.
   - sorular: istediğiniz kadar soru eklenebilir. dogru = doğru seçeneğin sırası (0'dan başlar:
            ilk seçenek 0, ikinci 1, ...). Alan, tüm sorular doğru cevaplanınca "avlanır".
 */
@@ -68,6 +71,23 @@ window.ALANLAR = [
     renk: "#8a7f6a",
     ozet: "Antik dünyanın en büyük liman kentlerinden biridir. Celsus Kütüphanesi'nin iki katlı cephesi, büyük tiyatrosu ve mermer caddeleri bugün hâlâ ayaktadır. Antik dünyanın yedi harikasından Artemis Tapınağı da buradaydı.",
     biliyorMuydun: "Celsus Kütüphanesi, MS 2. yüzyılda bir babanın anısına oğlu tarafından yaptırılmıştır; kütüphane aynı zamanda Celsus'un anıt mezarıdır.",
+    noktalar: [
+      {
+        ad: "Celsus Kütüphanesi",
+        model: "modeller/efes.glb",
+        bilgi: "MS 2. yüzyılın başında, Roma valisi Celsus'un anısına oğlu tarafından yaptırıldı. Binlerce parşömen rulosu barındırdığı düşünülür. Yıkılmış olan iki katlı cephesi 1970'lerde özgün parçalarıyla yeniden ayağa kaldırıldı."
+      },
+      {
+        ad: "Büyük Tiyatro",
+        model: "modeller/efes_tiyatro.glb",
+        bilgi: "Panayır Dağı'nın yamacına yaslanan tiyatro, Hellenistik dönemde yapılıp Roma döneminde büyütüldü ve yaklaşık 25.000 kişilik oldu. Oyunların yanı sıra halk toplantıları da burada yapılırdı; liman caddesine bakar."
+      },
+      {
+        ad: "Artemis Tapınağı",
+        model: "modeller/efes_artemis.glb",
+        bilgi: "Antik dünyanın yedi harikasından biridir. MÖ 6. yüzyılda Lidya Kralı Kroisos'un desteğiyle yapıldı, MÖ 356'da Herostratos adlı biri tarafından yakıldı ve yeniden inşa edildi. Bugün yerinde, parçalarından yeniden dikilmiş tek bir sütun durur."
+      }
+    ],
     sorular: [
       {
         metin: "Bir liman kenti olan Efes'in zamanla önemini yitirmesinin coğrafi nedeni nedir?",

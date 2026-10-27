@@ -76,6 +76,12 @@ model-viewer {
   background: var(--vurgu); color: #fff; font-weight: 700; font-size: 1rem;
   box-shadow: 0 4px 12px rgba(0,0,0,.2);
 }
+.sekmeler { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 2px; }
+.sekmeler button {
+  flex: none; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--vurgu);
+  background: var(--kart); color: var(--vurgu); font-weight: 600; font-size: .9rem; cursor: pointer;
+}
+.sekmeler button.secili { background: var(--vurgu); color: #fff; }
 .etiketler { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 .etiket {
   background: var(--kart); border: 1px solid var(--cizgi); border-radius: 999px;

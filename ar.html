@@ -16,6 +16,18 @@
       padding: 10px 16px; background: rgba(43,33,24,.75); color: #fff; font-size: .9rem;
     }
     .ust a { color: #ffd59e; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .gezgin {
+      position: fixed; top: 52px; left: 50%; transform: translateX(-50%); z-index: 11;
+      display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px);
+      background: rgba(255,250,242,.95); color: #2b2118; border-radius: 999px; padding: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.3); font-weight: 700;
+    }
+    .gezgin[hidden] { display: none; }
+    .gezgin span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .95rem; }
+    .gezgin button {
+      flex: none; width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: #b5651d; color: #fff; font-size: 1.1rem;
+    }
     .dugmeler {
       position: fixed; right: 12px; bottom: 12px; z-index: 11;
       display: flex; gap: 8px; transition: opacity .3s;
@@ -55,6 +67,12 @@
   <div class="ust">
     <span id="ipucu">İşaretçiyi masaya koyun, telefonu 20-40 cm yukarıdan tutun</span>
     <a href="index.html">← Alanlar</a>
+  </div>
+
+  <div class="gezgin" id="gezgin" hidden>
+    <button type="button" id="g-geri" aria-label="Önceki nokta">◀</button>
+    <span id="g-ad"></span>
+    <button type="button" id="g-ileri" aria-label="Sonraki nokta">▶</button>
   </div>
 
   <div class="dugmeler gizli" id="dugmeler">
@@ -109,10 +127,17 @@ function isaretciEtiketi(a) {
     ? `preset="${a.isaretci}"`
     : `type="pattern" url="${a.isaretci}"`;
   const s = a.olcek;
+  // Her nokta için bir model; aynı anda yalnızca biri görünür
+  const modeller = noktalari(a).map((n, i) =>
+    `<a-entity class="model" gltf-model="url(${n.model})" scale="${s} ${s} ${s}" visible="${i === 0}"></a-entity>`);
   return `
     <a-marker ${ozellik} data-alan="${a.id}" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
-      <a-entity class="model" gltf-model="url(${a.model})" scale="${s} ${s} ${s}"></a-entity>
+      ${modeller.join("")}
     </a-marker>`;
+}
+// Noktası olmayan alan, kendi modeli ve özetiyle tek noktalıymış gibi davranır
+function noktalari(a) {
+  return a.noktalar || [{ ad: a.ad, model: a.model, bilgi: a.ozet }];
 }
 
 document.body.insertAdjacentHTML("afterbegin", `
@@ -140,18 +165,46 @@ dondurDugme.onclick = () => {
   dondurDugme.classList.toggle("etkin", otomatikDon);
 };
 
+const gezgin = document.getElementById("gezgin");
+const noktaSira = {};    // alan id → şu an gösterilen noktanın sırası
+let aktifAlan = null, aktifIsaretci = null;
+
+function noktaGoster(a, m, i) {
+  const liste = noktalari(a);
+  const modeller = m.querySelectorAll(".model");
+  noktaSira[a.id] = i;
+  modeller.forEach((x, j) => x.setAttribute("visible", j === i));
+  aktifModel = modeller[i];
+  aktifOlcek = a.olcek;
+  carpan = aktifModel.object3D.scale.x / a.olcek;  // bu modelin önceki büyütmesi korunur
+
+  const n = liste[i];
+  document.getElementById("p-ad").textContent = n.ad;
+  document.getElementById("p-alt").textContent =
+    (a.noktalar ? `${a.ad} · ` : "") + `${a.il} · UNESCO ${a.unescoYili}`;
+  document.getElementById("p-ozet").textContent = n.bilgi;
+  document.getElementById("p-link").href = `index.html?alan=${a.id}`;
+  panel.style.borderTopColor = a.renk;
+
+  gezgin.hidden = liste.length < 2;
+  document.getElementById("g-ad").textContent = `${n.ad} (${i + 1}/${liste.length})`;
+}
+
+function noktaDegistir(adim) {
+  if (!aktifAlan) return;
+  const n = noktalari(aktifAlan).length;
+  noktaGoster(aktifAlan, aktifIsaretci, (noktaSira[aktifAlan.id] + adim + n) % n);
+}
+document.getElementById("g-geri").onclick = () => noktaDegistir(-1);
+document.getElementById("g-ileri").onclick = () => noktaDegistir(1);
+
 document.querySelectorAll("a-marker").forEach(m => {
   const a = ALANLAR.find(x => x.id === m.dataset.alan);
-  const model = m.querySelector(".model");
+  noktaSira[a.id] = 0;
   m.addEventListener("markerFound", () => {
-    aktifModel = model;
-    aktifOlcek = a.olcek;
-    carpan = model.object3D.scale.x / a.olcek;  // bu modelin önceki büyütmesi korunur
-    document.getElementById("p-ad").textContent = a.ad;
-    document.getElementById("p-alt").textContent = `${a.il} · UNESCO ${a.unescoYili}`;
-    document.getElementById("p-ozet").textContent = a.ozet;
-    document.getElementById("p-link").href = `index.html?alan=${a.id}`;
-    panel.style.borderTopColor = a.renk;
+    aktifAlan = a;
+    aktifIsaretci = m;
+    noktaGoster(a, m, noktaSira[a.id]);
     dugmeler.classList.remove("gizli");
     document.getElementById("ipucu").textContent = "Parmakla sağa-sola çevirin, yukarı-aşağı yatırın, iki parmakla büyütün";
   });
@@ -167,7 +220,7 @@ let onceki = performance.now();
 
 // Parmakla çevirme ve iki parmakla büyütme (bilgisayarda fareyle sürükleme)
 let sonX = null, sonY = null, ilkMesafe = null, ilkCarpan = 1, carpan = 1;
-const arayuzde = e => e.target.closest && e.target.closest(".panel, .dugmeler, .ust, .uyari");
+const arayuzde = e => e.target.closest && e.target.closest(".panel, .dugmeler, .gezgin, .ust, .uyari");
 const mesafe = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
 
 // Yatay kaydırma: kendi ekseninde döner. Dikey kaydırma: öne/arkaya yatar (±90° ile sınırlı).
