@@ -23,7 +23,7 @@
     .kart .qr img, .kart .qr canvas { width: 34mm !important; height: 34mm !important; }
     .kart small { font-size: 7pt; color: #6f6253; }
     .isaretci { justify-content: space-between; }
-    .isaretci img { width: 50mm; height: 50mm; }
+    .isaretci img { width: 52mm; height: auto; margin-top: 4mm; }
     @media print {
       body { background: #fff; }
       .bilgi { display: none; }
@@ -70,14 +70,13 @@ for (const a of ALANLAR.filter(x => x.isaretci === "hiro" || x.isaretci === "kan
   const kart = document.createElement("div");
   kart.className = "kart isaretci";
   kart.style.setProperty("--renk", a.renk);
-  const baslik = document.createElement("h2");
-  baslik.textContent = a.ad;
+  // Alan adı resmin içinde, siyah çerçevenin altında (tanımayı etkilemez)
   const img = document.createElement("img");
-  img.src = `isaretciler/${a.isaretci}.png`;
-  img.alt = `${a.isaretci} işaretçisi`;
+  img.src = `isaretciler/${a.id}_yazdir.png`;
+  img.alt = `${a.ad} işaretçisi`;
   const not = document.createElement("small");
   not.textContent = "AR modu: 'Kartı Tara' sayfasında kameraya gösterin";
-  kart.append(baslik, img, not);
+  kart.append(img, not);
   sayfa.append(kart);
 }
 </script>
